@@ -1,0 +1,19 @@
+
+
+
+	RJ45
+	
+1	Nar/Bco		GND
+2	Nar
+
+3	Ver/Bco		SDA   
+4	Azu
+
+5	Azul/Bco	SCL
+6	Verde
+
+7	Cafe/Bco	VCC
+8	Cafe
+
+
+
