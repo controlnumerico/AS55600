@@ -16,8 +16,8 @@ int Coil_4 = 14;
 
 void setup()
 {
-  Serial.begin(19200);
-  Wire.begin();         //I2C
+Serial.begin(19200);
+Wire.begin();            //I2C
 
 pinMode (Coil_1, OUTPUT);
 pinMode (Coil_2, OUTPUT);
@@ -126,19 +126,6 @@ angle_in = GetTool();
         // default is optional
         break;
     }
-
-
-
-
-
-   // }
-
-
-//Tool = GetTool();
-//Serial.println(Tool);
-
- 
-
 
 
 
