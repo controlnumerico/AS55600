@@ -35,8 +35,8 @@ pinMode (Coil_4, OUTPUT);
 pinMode (Coil_5, OUTPUT);
 pinMode (Coil_6, OUTPUT);
 
-  Serial.begin(9600);
-  S.begin(9600, SWSERIAL_8N1);
+  //Serial.begin(115200);
+  S.begin(57600, SWSERIAL_8N1);
   mb.begin(&S,23); // RE/DE connected to D2
   mb.slave(SLAVE_ID);
 
@@ -83,62 +83,40 @@ angle_in = GetTool();
              digitalWrite(Coil_1, HIGH);
              digitalWrite(Coil_2, LOW);
              digitalWrite(Coil_3, LOW);
-             digitalWrite(Coil_4, LOW);
       break;
       case 2:
              digitalWrite(Coil_1, LOW);
              digitalWrite(Coil_2, HIGH);
              digitalWrite(Coil_3, LOW);
-             digitalWrite(Coil_4, LOW);
       break;
       case 3:
              digitalWrite(Coil_1, HIGH);
              digitalWrite(Coil_2, HIGH);
              digitalWrite(Coil_3, LOW);
-             digitalWrite(Coil_4, LOW);
       break;
       case 4:
              digitalWrite(Coil_1, LOW);
              digitalWrite(Coil_2, LOW);
              digitalWrite(Coil_3, HIGH);
-             digitalWrite(Coil_4, LOW);
       break;
       case 5:
              digitalWrite(Coil_1, HIGH);
              digitalWrite(Coil_2, LOW);
              digitalWrite(Coil_3, HIGH);
-             digitalWrite(Coil_4, LOW);
       break;
       case 6:
              digitalWrite(Coil_1, LOW);
              digitalWrite(Coil_2, HIGH);
              digitalWrite(Coil_3, HIGH);
-             digitalWrite(Coil_4, LOW);
       break;
       case 7:
              digitalWrite(Coil_1, HIGH);
              digitalWrite(Coil_2, HIGH);
              digitalWrite(Coil_3, HIGH);
-             digitalWrite(Coil_4, LOW);
       break;
-      case 8:
-             digitalWrite(Coil_1, LOW);
-             digitalWrite(Coil_2, LOW);
-             digitalWrite(Coil_3, LOW);
-             digitalWrite(Coil_4, HIGH);
-      break;
-      case 9:
-             digitalWrite(Coil_1, HIGH);
-             digitalWrite(Coil_2, LOW);
-             digitalWrite(Coil_3, LOW);
-             digitalWrite(Coil_4, HIGH);
-      break;
-      case 10:
-             digitalWrite(Coil_1, LOW);
-             digitalWrite(Coil_2, HIGH);
-             digitalWrite(Coil_3, LOW);
-             digitalWrite(Coil_4, HIGH);
-      break;
+
+
+
 
 
       default:
@@ -181,21 +159,23 @@ AskedTool = mb.Hreg(REGN);
 
     if (coilValue == 170) {
 
-         
-        
       while (AskedTool != angle_in) {
      
+      digitalWrite(Coil_6, HIGH);
       digitalWrite(Coil_5, HIGH);
+
+
+
 
                                      }
 
-
-   
-
-
-
+     digitalWrite(Coil_6, LOW);
+     delay(2000);
      digitalWrite(Coil_5, LOW);
       //mb.Coil(REGN+0,0);    //Resetea Orden de Cambio de Hta
+
+
+
 
       mb.Hreg(REGN+1,0);
 
@@ -204,7 +184,9 @@ AskedTool = mb.Hreg(REGN);
      //===============================
 
     } else {
+      digitalWrite(Coil_6, LOW);
       digitalWrite(Coil_5, LOW);
+ 
     }
 
 
