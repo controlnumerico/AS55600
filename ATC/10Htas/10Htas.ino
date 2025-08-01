@@ -1,16 +1,17 @@
-#include <Wire.h>
-#include <AS5600.h>
 #include <ModbusRTU.h>
 #include <SoftwareSerial.h>
 
 SoftwareSerial S(16, 17);// we need one serial port for communicating with RS 485 to TTL adapter
 
+#define POT_VAL_REG 0
 #define REGN 0
 #define SLAVE_ID 2
 
-AMS_5600 ams5600;
-int ang, Tool, coilValue;
-int angle_in = 0;
+const int portPin = 26;
+
+
+int coilValue = 0;
+int AskedTool = 0;
 
 int Coil_1 = 32;
 int Coil_2 = 33;
@@ -19,13 +20,9 @@ int Coil_4 = 14;
 int Coil_5 = 12;
 int Coil_6 = 13;
 
-float AskedTool;
-
 ModbusRTU mb;
 
 void setup() {
-
-  Wire.begin();            //I2C
 
 // Salidas:   D32, D33 D27, D14, D12, D13
 pinMode (Coil_1, OUTPUT);
@@ -40,195 +37,74 @@ pinMode (Coil_6, OUTPUT);
   mb.begin(&S,23); // RE/DE connected to D2
   mb.slave(SLAVE_ID);
 
-mb.addCoil(REGN,0,1);
-mb.addHreg(REGN,0,2); //No Registros
-mb.addIsts(REGN,0,1);
-mb.addIreg(REGN,0,1);
+mb.addCoil(REGN,0,6);
+mb.addHreg(REGN,0,5); //No Registros
+mb.addIsts(REGN,0,5);
+mb.addIreg(REGN,0,5);
 
 mb.Coil(REGN+0,0);
-mb.Hreg(REGN, 01);
-mb.Hreg(REGN+1, 0);
+mb.Coil(REGN+1,0);
+mb.Coil(REGN+2,0);
+mb.Coil(REGN+3,0);
+mb.Coil(REGN+4,0);
+mb.Coil(REGN+5,0);
+
+  mb.Hreg(REGN, 01);
+  mb.Hreg(REGN+1, 02);
+  mb.Hreg(REGN+2, 03);
+  mb.Hreg(REGN+3, 04);
+  mb.Hreg(REGN+4, 05);
+
+
+
 mb.Ireg(REGN, 01);
 
-
-  xTaskCreatePinnedToCore (
-    loop2,     // Function to implement the task
-    "loop2",   // Name of the task
-    1000,      // Stack size in bytes
-    NULL,      // Task input parameter
-    0,         // Priority of the task
-    NULL,      // Task handle.
-    0          // Core where the task should run
-  );
-
-
-
-
-
 }
 
+void loop() {
+          coilValue = int(mb.Hreg(REGN+1));   //170 to be true
+          AskedTool = mb.Hreg(REGN);
+            if (coilValue == 170) 
+                {
+                  mb.Hreg(REGN+1,0);  //Resetea Valor
+                    while (AskedTool != getTool()) 
+                          {
+                            digitalWrite(Coil_6, HIGH);
+                            digitalWrite(Coil_5, HIGH);
+                          }
+                    digitalWrite(Coil_6, LOW);
+                    delay(2000);
+                    digitalWrite(Coil_5, LOW);
 
-void loop() 
-{
+                } else 
+                     {
+                       digitalWrite(Coil_6, LOW);
+                       digitalWrite(Coil_5, LOW);
+                     }
+  
+          mb.Ireg(REGN, getTool());
+          delay(1);
+          mb.task();
+           }
 
 
+// D23  RS485
 
-angle_in = GetTool();
+// Salidas:   D32, D33 D27, D14, D12, D13
+// Entradas:  D15, D2, D4, D5, D18, D19
 
+//  DAC2  D25
+//  DAC1  D26
 
 
-     
-     switch (angle_in) {
-      case 1:
-             digitalWrite(Coil_1, HIGH);
-             digitalWrite(Coil_2, LOW);
-             digitalWrite(Coil_3, LOW);
-      break;
-      case 2:
-             digitalWrite(Coil_1, LOW);
-             digitalWrite(Coil_2, HIGH);
-             digitalWrite(Coil_3, LOW);
-      break;
-      case 3:
-             digitalWrite(Coil_1, HIGH);
-             digitalWrite(Coil_2, HIGH);
-             digitalWrite(Coil_3, LOW);
-      break;
-      case 4:
-             digitalWrite(Coil_1, LOW);
-             digitalWrite(Coil_2, LOW);
-             digitalWrite(Coil_3, HIGH);
-      break;
-      case 5:
-             digitalWrite(Coil_1, HIGH);
-             digitalWrite(Coil_2, LOW);
-             digitalWrite(Coil_3, HIGH);
-      break;
-      case 6:
-             digitalWrite(Coil_1, LOW);
-             digitalWrite(Coil_2, HIGH);
-             digitalWrite(Coil_3, HIGH);
-      break;
-      case 7:
-             digitalWrite(Coil_1, HIGH);
-             digitalWrite(Coil_2, HIGH);
-             digitalWrite(Coil_3, HIGH);
-      break;
 
 
 
 
-
-      default:
-        // if nothing else matches, do the default
-        // default is optional
-        break;
-    }
-
-
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-void loop2 (void* pvParameters) 
-          {
-          while (1) 
-              {
-
-mb.Ireg(REGN, angle_in);
- 
-
-//coilValue = mb.Coil(REGN+0);
-coilValue = int(mb.Hreg(REGN+1));
-
-
-AskedTool = mb.Hreg(REGN);
-
-    if (coilValue == 170) {
-
-      while (AskedTool != angle_in) {
-     
-      digitalWrite(Coil_6, HIGH);
-      digitalWrite(Coil_5, HIGH);
-
-
-
-
-                                     }
-
-     digitalWrite(Coil_6, LOW);
-     delay(2000);
-     digitalWrite(Coil_5, LOW);
-      //mb.Coil(REGN+0,0);    //Resetea Orden de Cambio de Hta
-
-
-
-
-      mb.Hreg(REGN+1,0);
-
-      //===============================
-     //===============================
-     //===============================
-
-    } else {
-      digitalWrite(Coil_6, LOW);
-      digitalWrite(Coil_5, LOW);
- 
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-     //delay(10);
-     mb.task();
- 
-
-              }
-          }
-
-
-
-
-
-float Angle(word newAngle)
-{
-  /* Raw data reports 0 - 4095 segments, which is 0.087 of a degree */
-  float retVal = newAngle * 0.087;
-  ang = retVal;
-  return ang;
-}
-
-int GetTool()
-{
-int a; 
-a = int(Angle(ams5600.getRawAngle()));
-a = map(a,0,359,1,11);
- return a;
+int getTool(){
+  int potValor;
+      potValor = map(analogRead(portPin), 0, 4095, 1, 10);
+  return potValor;
 }
 
 
